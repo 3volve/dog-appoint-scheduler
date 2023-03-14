@@ -33,6 +33,7 @@ async function saveCredentials(client) {
         client_secret: key.client_secret,
         refresh_token: client.credentials.refresh_token,
     });
+    
     await fs.writeFile(TOKEN_PATH, payload);
 }
 
@@ -77,11 +78,11 @@ async function listEvents(auth) {
     console.log('Upcoming 10 events:');
     let results = JSON.stringify(events.map((event, i) => {
         let startDate = new Date(event.start.dateTime || event.start.date);
-        startDate = startDate.getDate() + "/" + startDate.getMonth() + "/" + startDate.getFullYear();
+        startDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
 
         let eventID = event.summary.replaceAll(" ", "") + "-" + startDate;
 
-        return new CalEvent(eventID, event.start.dateTime || event.start.date, event.summary);
+        return new CalEvent(eventID, startDate, event.summary);
     }));
 
     return results;

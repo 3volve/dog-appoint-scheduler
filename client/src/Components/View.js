@@ -12,15 +12,8 @@ function View({ events }) {
           events.length === 0 ? "React App loaded empty Google Calendar" :
           (
             <div>
-              React App with Google Calendar API!
-              <Calendar />
-              <ul>
-                {events?.map((event) => (
-                  <li key={event.id} className="flex justify-center">
-                    <Event description={event.summary} startTime={event.start} />
-                  </li>
-                ))}
-              </ul>
+              React App for Dog Training Appointment Scheduling
+              <Calendar events={events} />
             </div>
           )
         }
