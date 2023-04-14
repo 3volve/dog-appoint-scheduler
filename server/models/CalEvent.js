@@ -1,7 +1,7 @@
 class CalEvent {
-    constructor(id, start, summary) {
+    constructor(id, startDate, summary) {
         this.id = id;
-        this.start = start;
+        this.startDate = startDate;
         this.summary = summary;
     }
 }

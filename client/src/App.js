@@ -21,9 +21,14 @@ export default function App() {
   }
 
   const addEvent = () => {
+    setLoading(true);
+    
     fetch("/api/add-event")
     .then((res) => res.json())
-    .then((data) => setEvents(JSON.parse(data)));
+    .then((data) => {
+      setEvents(JSON.parse(data));
+      setLoading(false);
+    });
   }
 
   useEffect(() => {
@@ -34,7 +39,7 @@ export default function App() {
     <div>
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <View events={ events }/>
+        <View events={ events } addEvent={ addEvent } />
       </LocalizationProvider>
     </div>
   );

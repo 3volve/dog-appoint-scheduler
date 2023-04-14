@@ -1,20 +1,28 @@
-import React from "react";
-import "../App.css";
- 
-function Event({ description, startTime }) {
-  // let date = new Date(startTime);
-  // console.log(date.getMonth());
+export default class Event {
+  customer;
+  dogs;
+  // Need to add subsections for dog details:
+  // Dog name:
+  // Dog Age:
+  // Dog Breed:
+  phone;
+  email;
+  payment = false;
+  startTime;
+  summary;
 
-  return (
-    <div className="">
-      <span className="" href="">
-        <div className="">
-          <p className="">{description}</p>
-          <p className="">{startTime}</p>
-        </div>
-      </span>
-    </div>
-  );
+  constructor(startTime, dogs) {
+    this.startTime = startTime;
+    this.dogs = dogs;
+  }
+
+  getCopy() {
+    let newEvent = new Event(this.startTime, this.dogs);
+    newEvent.customer = this.customer;
+    newEvent.email = this.email;
+    newEvent.payment = this.payment;
+    newEvent.summary = this.summary;
+
+    return newEvent;
+  }
 }
- 
-export default Event;

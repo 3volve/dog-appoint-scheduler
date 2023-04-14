@@ -43,6 +43,10 @@ async function authorize() {
         return client;
     }
 
+    return renewAuth();
+}
+
+async function renewAuth() {
     client = await authenticate({
         scopes: SCOPES,
         keyfilePath: CREDENTIALS_PATH,
@@ -52,7 +56,32 @@ async function authorize() {
         await saveCredentials(client);
     }
 
-    return client;
+    return await client;
+}
+
+async function getListAndCheckIfTokenExpired(auth, retries) {
+    var result;
+    try {
+        const calendar = google.calendar({ version: 'v3', auth });
+
+        result = await calendar.events.list({
+            calendarId: CALENDAR_ID,
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime',
+        });
+    } catch (err) {
+        if (retries > 0) {
+            console.log("Error:" + err);
+            await fs.rm(TOKEN_PATH);
+            auth = await renewAuth();
+            return await getListAndCheckIfTokenExpired(auth, --retries);
+        } else 
+            throw new Error("Failed to properly retrieve events list after all retries.");
+    }
+
+    return result;
 }
 
 /**
@@ -60,14 +89,7 @@ async function authorize() {
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 async function listEvents(auth) {
-    const calendar = google.calendar({ version: 'v3', auth });
-    const res = await calendar.events.list({
-        calendarId: CALENDAR_ID,
-        timeMin: new Date().toISOString(),
-        maxResults: 10,
-        singleEvents: true,
-        orderBy: 'startTime',
-    });
+    const res = await getListAndCheckIfTokenExpired(auth, 2);
 
     const events = res.data.items;
     if (!events || events.length === 0) {
@@ -78,17 +100,16 @@ async function listEvents(auth) {
     console.log('Upcoming 10 events:');
     let results = JSON.stringify(events.map((event, i) => {
         let startDate = new Date(event.start.dateTime || event.start.date);
-        startDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear();
+        console.log(startDate.toTimeString());
+        startDate = (startDate.getMonth() + 1) + "/" + startDate.getDate() + "/" + startDate.getFullYear() + "-" + startDate.getHours() + ":" + startDate.getMinutes() + ":" + startDate.getSeconds();
 
         let eventID = event.summary.replaceAll(" ", "") + "-" + startDate;
 
-        return new CalEvent(eventID, startDate, event.summary);
+        return new CalEvent(eventID, new Date(event.start.dateTime || event.start.date), event.summary);
     }));
 
     return results;
 }
-
-
 
 function getEvents() {
     return authorize().then(listEvents).catch(console.error);
